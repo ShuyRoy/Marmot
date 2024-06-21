@@ -1,0 +1,3 @@
+/Users/rui/Desktop/CityULLM/app/.cxx/RelWithDebInfo/5t246p1t/x86/CMakeFiles/llama.dir
+/Users/rui/Desktop/CityULLM/app/.cxx/RelWithDebInfo/5t246p1t/x86/CMakeFiles/edit_cache.dir
+/Users/rui/Desktop/CityULLM/app/.cxx/RelWithDebInfo/5t246p1t/x86/CMakeFiles/rebuild_cache.dir

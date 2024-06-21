@@ -1,0 +1,5 @@
+# ninja log v5
+0	272	1714468642958325358	CMakeFiles/llama.dir/llama.cpp.o	d35fd2a975f5591
+272	353	1714468643014094602	/Users/rui/Desktop/CityULLM/app/build/intermediates/cxx/Debug/2367f4l6/obj/x86/libllama.so	87898f08114e7328
+3	456	1714481382545673266	CMakeFiles/llama.dir/llama.cpp.o	d35fd2a975f5591
+456	553	1714481382620366896	/Users/rui/Desktop/CityULLM/app/build/intermediates/cxx/Debug/2367f4l6/obj/x86/libllama.so	87898f08114e7328
