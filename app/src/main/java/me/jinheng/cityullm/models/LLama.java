@@ -46,7 +46,6 @@ public class LLama {
 
     public static FileWriter historyWriter;
 
-
     public static boolean answering = false;
 
     public static AnswerState answerState = AnswerState.NO_MESSAGE_NEED_REPLY;
@@ -208,7 +207,11 @@ public class LLama {
         if (!historyFolder_.exists()) {
             historyFolder_.mkdirs();
         }
-        historyFolder = historyFolder_.getAbsolutePath() + "/";
+
+        File dataFolder = new File(LLamaFolder, "data");
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
     }
 
     public static void copyCpp(Context context, File externalDir) throws IOException {

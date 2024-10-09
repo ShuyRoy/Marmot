@@ -77,9 +77,11 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.annotation:annotation:1.7.1")
     implementation("com.google.firebase:firebase-inappmessaging:20.4.2")
+    implementation(files("libs/commons-io-2.17.0.jar"))
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("com.alibaba:fastjson:1.2.83")
     implementation("com.github.oshi:oshi-core:6.6.0")
+    implementation("org.apache.commons.io:commonsIO:2.17.0")
 }

@@ -6,7 +6,7 @@ public class ModelInfo {
 
     private String modelUrl;
 
-//    private String modelLocalPath;
+    private String modelLocalPath;
 
     private long modelSize;
 
@@ -82,4 +82,6 @@ public class ModelInfo {
     public void setModelType(ModelType modelType) {
         this.modelType = modelType;
     }
+
+    public String getModelLocalPath() { return modelLocalPath; }
 }
