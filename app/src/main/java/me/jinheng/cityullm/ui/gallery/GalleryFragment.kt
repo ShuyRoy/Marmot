@@ -53,7 +53,7 @@ class GalleryFragment : Fragment() {
         _binding = FragmentGalleryBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        var models: List<ModelInfo> = ModelOperation.getLocalModels()
+        var models: List<ModelInfo> = ModelOperation.getAllSupportModels()
         val numberOfTextViews = models.size
 
         for (i in 0..<numberOfTextViews) {

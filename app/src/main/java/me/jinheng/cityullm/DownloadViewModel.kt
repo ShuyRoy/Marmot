@@ -15,7 +15,6 @@ class DownloadViewModel : ViewModel() {
 
     fun startDownload() {
         viewModelScope.launch(Dispatchers.IO) {
-            ModelOperation.downloadModel("Llama-2-7B-Chat-GGUF", _downloadProgress)
         }
     }
 }

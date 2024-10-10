@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class ModelOperation {
         void onProgressUpdate(int progress);
     }
 
-    public static boolean downloadFile(String fileUrl, String filePath, ProgressListener listener, MutableLiveData<Integer> _downloadProgress) throws Exception {
+    public static boolean downloadFile(String fileUrl, String filePath, ProgressListener listener) throws Exception {
         Log.d("debug", "Download file from " + fileUrl + " and save in " + filePath);
         URL url = new URL(fileUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -72,9 +73,6 @@ public class ModelOperation {
             int progress = (int) ((downloadedSize * 100L) / totalSize);
             if (listener != null) {
                 listener.onProgressUpdate(progress);
-            }
-            if (_downloadProgress != null) {
-                _downloadProgress.postValue(progress);
             }
 
             // Check the download status
@@ -106,13 +104,14 @@ public class ModelOperation {
         String modelInfoPath = Config.localPath + "models.json";
         try {
             // Download metadata of models from server
-            boolean result = downloadFile(modelInfoUrl, modelInfoPath, null, null);
+            boolean result = downloadFile(modelInfoUrl, modelInfoPath, null);
             if (result) {
                 File file = new File(modelInfoPath);
                 String content = FileUtils.readFileToString(file, "utf-8");
                 List<ModelInfo> models = JSON.parseArray(content, ModelInfo.class);
 
                 for (ModelInfo info : models) {
+                    info.setModelLocalPath(Config.localPath + info.getModelLocalPath());
                     modelName2modelInfo.put(info.getModelName(), info);
                 }
             }
@@ -129,10 +128,10 @@ public class ModelOperation {
     public static void downloadModelAsync(String modelName, TextView textViewProgress) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
-        ModelInfo model = modelName2modelInfo.get(modelName);
+        ModelInfo model = getModelInfo(modelName);
         executorService.execute(() -> {
             try {
-                boolean result = downloadFile(model.getModelUrl(), model.getModelLocalPath(), null, progress -> handler.post(() ->
+                boolean result = downloadFile(model.getModelUrl(), model.getModelLocalPath(), progress -> handler.post(() ->
                         textViewProgress.setText("" + progress + "%")));
 
                 handler.post(() -> {
@@ -152,10 +151,10 @@ public class ModelOperation {
     public static void downloadModelAsync(String modelName, TextView textViewProgress, Runnable backComplete) {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
-
+        ModelInfo model = getModelInfo(modelName);
         executorService.execute(() -> {
             try {
-                boolean result = downloadModel(modelName, progress -> handler.post(() ->
+                boolean result = downloadFile(model.getModelUrl(), model.getModelLocalPath(), progress -> handler.post(() ->
                         textViewProgress.setText("" + progress + "%")));
 
                 handler.post(() -> {
@@ -193,35 +192,16 @@ public class ModelOperation {
         }
     }
 
-    public static List<ModelInfo> getLocalModels() {
-        File localDir = new File(Config.localPath);
-        File[] modelFiles = localDir.listFiles();
-        if (null == modelFiles) {
-            return null;
-        }
-
-        List<ModelInfo> models = new LinkedList<>();
-        for (File file : modelFiles) {
-            if (file.isFile() && file.getName().startsWith("ggml-model")) {
-                String fileName = file.getName();
-                String modelName = fileName.substring(0, fileName.lastIndexOf("."));
-                long modelSize = file.length();
-                ModelType modelType = ModelType.GGUF;
-
-                ModelInfo modelInfo = new ModelInfo(modelName, "",
-                        modelSize, modelType);
-                models.add(modelInfo);
-                modelName2modelInfo.put(modelName, modelInfo);
-            }
-        }
-        return models;
-    }
-
     public static ModelInfo getModelInfo(String modelName) {
         if (modelName2modelInfo.isEmpty()) {
-            getLocalModels();
+            updateModels();
         }
-        return modelName2modelInfo.get(modelName);
+        if (modelName2modelInfo.get(modelName) != null) {
+            return modelName2modelInfo.get(modelName);
+        } else {
+            Log.d("debug", "Cannot find the model " + modelName);
+            return null;
+        }
     }
 
     public static boolean deleteModel(String modelName) {
