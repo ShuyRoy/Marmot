@@ -1,26 +1,16 @@
 package me.jinheng.cityullm.models;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
 
-import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Field;
 
 import me.jinheng.cityullm.Message;
 import me.jinheng.cityullm.MessageAdapter;
@@ -58,6 +48,51 @@ public class LLama {
 
     public static HistoryLogger historyLogger;
 
+    public static void initFolder(File externalDir) {
+        File llamaFolder = new File(externalDir, "llama");
+        Config.basePath = llamaFolder.getAbsolutePath() + "/";
+
+        File cppFolder = new File(llamaFolder, "main");
+        Config.cppPath = cppFolder.getAbsolutePath() + "/";
+        if (!cppFolder.exists()) {
+            cppFolder.mkdirs();
+        }
+
+        File modelFolder = new File(llamaFolder, "models");
+        Config.modelPath = modelFolder.getAbsolutePath() + "/";
+        if (!modelFolder.exists()) {
+            modelFolder.mkdirs();
+        }
+
+        File historyFolder = new File(llamaFolder, "history");
+        Config.historyPath = historyFolder.getAbsolutePath() + "/";
+        if (!historyFolder.exists()) {
+            historyFolder.mkdirs();
+        }
+
+        File dataFolder = new File(llamaFolder, "data");
+        Config.dataPath = dataFolder.getAbsolutePath() + "/";
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs();
+        }
+
+    }
+
+    public static boolean hasInitialModel() {
+        File modelFolder = new File(Config.modelPath);
+        if (modelFolder.exists()) {
+            File[] files = modelFolder.listFiles();
+            for (File f : files) {
+                if (f.getName().endsWith(".gguf")) {
+                    return false;
+                }
+            }
+        } else {
+            Log.d("debug", modelFolder.getAbsolutePath() + " does not exist");
+        }
+        return true;
+    }
+
     public static native void startLLama(NativeMessageReceiver msg, String localModelPath, int threadNum);
 
     public static void init(String modelName, MessageAdapter messageAdapter_, Activity activity_, RecyclerView recyclerView_, TextView speedTextView_, ExtendedFloatingActionButton fab_) throws IOException {
@@ -69,7 +104,7 @@ public class LLama {
         historyPath = historyFolder + modelName;
         historyWriter = new FileWriter(historyPath, true);
         historyLogger = new HistoryLogger(historyFolder + modelName, CONSTANT.MAX_INIT_HISTORY_ITEM);
-        String localModelPath = Config.localPath + modelName + ".gguf";
+        String localModelPath = Config.basePath + modelName + ".gguf";
         float totalMemory = Utils.getTotalMemory() / CONSTANT.GB;
         float canUseMemory = Math.min(totalMemory, Config.maxMemorySize);
         ModelInfo mInfo = ModelOperation.getModelInfo(modelName);
@@ -187,53 +222,6 @@ public class LLama {
 
             id = historyItem.getId() + 1;
         }
-    }
-
-
-    public static void initFolder(File externalDir) {
-        File LLamaFolder = new File(externalDir, "llama");
-
-        File cppFolder = new File(LLamaFolder, "main");
-        if (!cppFolder.exists()) {
-            cppFolder.mkdirs();
-        }
-
-        File modelFolder = new File(LLamaFolder, "models");
-        if (!modelFolder.exists()) {
-            modelFolder.mkdirs();
-        }
-
-        File historyFolder_ = new File(LLamaFolder, "history");
-        if (!historyFolder_.exists()) {
-            historyFolder_.mkdirs();
-        }
-
-        File dataFolder = new File(LLamaFolder, "data");
-        if (!dataFolder.exists()) {
-            dataFolder.mkdirs();
-        }
-    }
-
-    public static void copyCpp(Context context, File externalDir) throws IOException {
-
-    }
-
-    public static boolean findModel(File externalDir) {
-
-        String absolutePath = externalDir.getAbsolutePath();
-        Config.localPath = absolutePath + "/llama/models/";
-        File modelFolder = new File(Config.localPath);
-        if (!modelFolder.exists()) {
-            modelFolder.mkdirs();
-        }
-
-        File[] files = modelFolder.listFiles();
-        for (File f : files) {
-            if (f.getName().startsWith("ggml-model")){
-                return false;
-            }
-        }
-        return true;
     }
 
     public static void addMessageOnUI(String msg) {

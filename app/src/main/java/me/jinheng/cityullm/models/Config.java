@@ -14,6 +14,13 @@ public class Config {
 
     public static float lockSize = 0.8F;
 
-    public static String localPath = null;
+    public static String basePath = null;
 
+    public static String cppPath = null;
+
+    public static String modelPath = null;
+
+    public static String historyPath = null;
+
+    public static String dataPath = null;
 }

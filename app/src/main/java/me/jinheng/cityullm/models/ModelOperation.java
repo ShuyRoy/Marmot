@@ -1,23 +1,13 @@
 package me.jinheng.cityullm.models;
 
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.Display;
-import android.view.MotionEvent;
 import android.widget.TextView;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-
 import java.io.File;
-import java.io.FileReader;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import java.io.InputStream;
@@ -28,7 +18,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 import org.apache.commons.io.FileUtils;
 
@@ -51,9 +40,11 @@ public class ModelOperation {
     }
 
     public static boolean downloadFile(String fileUrl, String filePath, ProgressListener listener) throws Exception {
-        Log.d("debug", "Download file from " + fileUrl + " and save in " + filePath);
+        Log.d("debug", "Download model file from " + fileUrl);
+        Log.d("debug", "Save model in " + filePath);
         URL url = new URL(fileUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(5 * 1000);
         int totalSize = conn.getContentLength();
         int downloadedSize = 0;
 
@@ -65,7 +56,7 @@ public class ModelOperation {
         InputStream inputStream = conn.getInputStream();
         FileOutputStream outputStream = new FileOutputStream(filePath);
 
-        int bytesRead;
+        int bytesRead = 0;
         byte[] buffer = new byte[4096];
         while ((bytesRead = inputStream.read(buffer)) != -1) {
             outputStream.write(buffer, 0, bytesRead);
@@ -97,27 +88,34 @@ public class ModelOperation {
         outputStream.close();
         inputStream.close();
         conn.disconnect();
+        Log.d("debug", fileUrl + " is downloaded");
         return true;
     }
 
     public static void updateModels() {
-        String modelInfoPath = Config.localPath + "models.json";
-        try {
-            // Download metadata of models from server
-            boolean result = downloadFile(modelInfoUrl, modelInfoPath, null);
-            if (result) {
-                File file = new File(modelInfoPath);
-                String content = FileUtils.readFileToString(file, "utf-8");
-                List<ModelInfo> models = JSON.parseArray(content, ModelInfo.class);
+        String modelInfoPath = Config.modelPath + "models.json";
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executorService.execute(() -> {
+            try {
+                // Download metadata of models from server
+                boolean result = downloadFile(modelInfoUrl, modelInfoPath, null);
+                if (result) {
+                    File file = new File(modelInfoPath);
+                    String content = FileUtils.readFileToString(file, "utf-8");
+                    List<ModelInfo> models = JSON.parseArray(content, ModelInfo.class);
 
-                for (ModelInfo info : models) {
-                    info.setModelLocalPath(Config.localPath + info.getModelLocalPath());
-                    modelName2modelInfo.put(info.getModelName(), info);
+                    for (ModelInfo info : models) {
+                        info.setModelLocalPath(Config.modelPath + info.getModelLocalPath());
+                        modelName2modelInfo.put(info.getModelName(), info);
+                    }
+                } else {
+                    Log.d("debug", modelInfoUrl + " cannot be downloaded");
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     public static List<ModelInfo> getAllSupportModels() {
@@ -207,7 +205,7 @@ public class ModelOperation {
     public static boolean deleteModel(String modelName) {
         ModelInfo modelInfo = modelName2modelInfo.get(modelName);
         assert modelInfo != null;
-        File f = new File(Config.localPath + modelName + ".gguf");
+        File f = new File(modelInfo.getModelLocalPath());
         return f.delete();
     }
 

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.navigation.NavigationView
@@ -29,9 +28,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         LLama.initFolder(getExternalFilesDir(null))
-
-        LLama.copyCpp(this, getExternalFilesDir(null))
-        if (LLama.findModel(getExternalFilesDir(null))) {
+        ModelOperation.updateModels();
+        if (!LLama.hasInitialModel()) {
             showDownloadDialog()
         }
 
@@ -81,34 +79,23 @@ class MainActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setView(dialogView)
         builder.setTitle("Download Model")
-        builder.setMessage("Could not find model in local, download a model？")
+        builder.setMessage("Could not find model in local, download tinyllama-1.1b-chat-v1.0 and have a try？")
         builder.setPositiveButton("Download", null) // 先不设置监听器
         builder.setNegativeButton("Cancel", null) // 同样先不设置监听器
         val progressDialog: AlertDialog = builder.create()
         progressDialog.setCancelable(false); // 设置对话框不可通过点击外部取消，只能通过按钮
-
         progressDialog.show()
 
         // 设置按钮的点击事件，这样可以确保对话框已经显示
         progressDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             progressTextView.text = "Starting download..."
-            ModelOperation.downloadModelAsync("ggml-model-tinyllama", progressTextView) {
+            ModelOperation.downloadModelAsync("tinyllama-1.1b-chat-v1.0", progressTextView) {
                 progressDialog.dismiss()
             }
         }
         progressDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
             progressDialog.dismiss()
         }
-
-//        builder.setPositiveButton("Download") { dialog, _ ->
-//            progressTextView.setText("abcd")
-//            ModelOperation.downloadModelAsync("Llama-2-7B-Chat-GGUF", progressTextView) {
-//                dialog.dismiss()
-//            }
-//        }
-//        builder.setNegativeButton("Cancel") { dialog, _ ->
-//            dialog.dismiss()
-//        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
