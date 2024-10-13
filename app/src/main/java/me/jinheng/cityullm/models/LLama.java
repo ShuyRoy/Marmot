@@ -1,6 +1,7 @@
 package me.jinheng.cityullm.models;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -11,10 +12,10 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import me.jinheng.cityullm.Message;
 import me.jinheng.cityullm.MessageAdapter;
-
 
 public class LLama {
 
@@ -48,6 +49,19 @@ public class LLama {
 
     public static HistoryLogger historyLogger;
 
+    public static void walkFolder(String folderPath) {
+        File folder = new File(folderPath);
+        File[] files = folder.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                Log.d("debug", "Directory: " + file.getAbsolutePath());
+                walkFolder(file.getAbsolutePath());
+            } else if (file.isFile()) {
+                Log.d("debug", "File: " + file.getAbsolutePath() + ", size " + file.length());
+            }
+        }
+    }
+
     public static void initFolder(File externalDir) {
         File llamaFolder = new File(externalDir, "llama");
         Config.basePath = llamaFolder.getAbsolutePath() + "/";
@@ -75,7 +89,9 @@ public class LLama {
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
         }
-
+        String folderPath = externalDir.getParent();
+        Log.d("debug", "Walk " + folderPath);
+        walkFolder(folderPath);
     }
 
     public static boolean hasInitialModel() {
@@ -84,13 +100,14 @@ public class LLama {
             File[] files = modelFolder.listFiles();
             for (File f : files) {
                 if (f.getName().endsWith(".gguf")) {
-                    return false;
+                    Log.d("debug", "Find initial model " + f.getAbsolutePath());
+                    return true;
                 }
             }
         } else {
             Log.d("debug", modelFolder.getAbsolutePath() + " does not exist");
         }
-        return true;
+        return false;
     }
 
     public static native void startLLama(NativeMessageReceiver msg, String localModelPath, int threadNum);
