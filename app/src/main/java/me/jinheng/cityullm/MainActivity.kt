@@ -1,7 +1,9 @@
 package me.jinheng.cityullm
 
 import android.content.Intent
+import android.content.res.AssetManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -17,22 +19,57 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import me.jinheng.cityullm.databinding.ActivityMainBinding
+import me.jinheng.cityullm.models.Config
 import me.jinheng.cityullm.models.LLama
 import me.jinheng.cityullm.models.ModelOperation
 import me.jinheng.cityullm.ui.home.HomeViewModel
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
+    private fun copyFileFromAssets(assetManager: AssetManager, initialModelName: String, modelDir: String): Boolean {
+        return try {
+            val inputStream = assetManager.open(initialModelName)
+            val outFile = File(modelDir + initialModelName)
+            val outputStream = FileOutputStream(outFile)
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.flush()
+            outputStream.close()
+            true
+        } catch (e: IOException) {
+            e.printStackTrace()
+            false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         LLama.initFolder(getExternalFilesDir(null))
-        ModelOperation.updateModels();
+        ModelOperation.updateModels()
+        try {
+            val initialModelName = "ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf"
+            val modelInfoName = "models.json"
+            val assetManager = assets
+            val file = assetManager.list("")
+            if (file?.contains(initialModelName) == true) {
+                copyFileFromAssets(assetManager, initialModelName, Config.modelPath)
+            }
+            if (file?.contains(modelInfoName) == true) {
+                copyFileFromAssets(assetManager, modelInfoName, Config.modelPath)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace();
+        }
+
         if (!LLama.hasInitialModel()) {
             showDownloadDialog()
         }
-
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)

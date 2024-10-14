@@ -2,17 +2,23 @@ package me.jinheng.cityullm.models;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.util.Log;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alibaba.fastjson.JSON;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.List;
 
 import me.jinheng.cityullm.Message;
 import me.jinheng.cityullm.MessageAdapter;
@@ -89,9 +95,6 @@ public class LLama {
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
         }
-        String folderPath = externalDir.getParent();
-        Log.d("debug", "Walk " + folderPath);
-        walkFolder(folderPath);
     }
 
     public static boolean hasInitialModel() {
