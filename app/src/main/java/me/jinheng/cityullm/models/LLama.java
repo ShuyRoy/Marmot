@@ -113,6 +113,7 @@ public class LLama {
         return false;
     }
 
+    // TODO
     public static native void startLLama(NativeMessageReceiver msg, String localModelPath, int threadNum);
 
     public static void init(String modelName, MessageAdapter messageAdapter_, Activity activity_, RecyclerView recyclerView_, TextView speedTextView_, ExtendedFloatingActionButton fab_) throws IOException {

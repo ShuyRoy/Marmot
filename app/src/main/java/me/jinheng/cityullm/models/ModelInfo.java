@@ -10,8 +10,6 @@ public class ModelInfo {
 
     private long modelSize;
 
-    private ModelType modelType;
-
     private long kvSize;
 
     private long prefetchSize;
@@ -32,10 +30,6 @@ public class ModelInfo {
 
     public void setModelSize(long modelSize) { this.modelSize = modelSize; }
 
-    public ModelType getModelType() { return modelType; }
-
-    public void setModelType(ModelType modelType) { this.modelType = modelType; }
-
     public long getKvSize() { return kvSize; }
 
     public void setKvSize(long kvSize) { this.kvSize = kvSize; }
@@ -46,21 +40,19 @@ public class ModelInfo {
 
     public ModelInfo() { }
 
-    public ModelInfo(String modelName, String modelUrl, String modelLocalPath, long modelSize, ModelType modelType, long kvSize, long prefetchSize) {
+    public ModelInfo(String modelName, String modelUrl, String modelLocalPath, long modelSize, long kvSize, long prefetchSize) {
         this.modelName = modelName;
         this.modelUrl = modelUrl;
         this.modelLocalPath = modelLocalPath;
         this.modelSize = modelSize;
-        this.modelType = modelType;
         this.kvSize = kvSize;
         this.prefetchSize = prefetchSize;
     }
 
-    public ModelInfo(String modelName, String modelUrl, String modelLocalPath, long modelSize, ModelType modelType) {
+    public ModelInfo(String modelName, String modelUrl, String modelLocalPath, long modelSize) {
         this.modelName = modelName;
         this.modelUrl = modelUrl;
         this.modelLocalPath = modelLocalPath;
         this.modelSize = modelSize;
-        this.modelType = modelType;
     }
 }

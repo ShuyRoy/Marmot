@@ -94,6 +94,21 @@ public class ModelOperation {
 
     public static void updateModels() {
         String modelInfoPath = Config.modelPath + "models.json";
+        File localFile = new File(modelInfoPath);
+        if (localFile.exists()) {
+            try {
+                String content = FileUtils.readFileToString(localFile, "utf-8");
+                List<ModelInfo> models = JSON.parseArray(content, ModelInfo.class);
+
+                modelName2modelInfo.clear();
+                for (ModelInfo info : models) {
+                    info.setModelLocalPath(Config.modelPath + info.getModelLocalPath());
+                    modelName2modelInfo.put(info.getModelName(), info);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         executorService.execute(() -> {
@@ -101,8 +116,8 @@ public class ModelOperation {
                 // Download metadata of models from server
                 boolean result = downloadFile(modelInfoUrl, modelInfoPath, null);
                 if (result) {
-                    File file = new File(modelInfoPath);
-                    String content = FileUtils.readFileToString(file, "utf-8");
+                    File remoteFile = new File(modelInfoPath);
+                    String content = FileUtils.readFileToString(remoteFile, "utf-8");
                     List<ModelInfo> models = JSON.parseArray(content, ModelInfo.class);
 
                     for (ModelInfo info : models) {
