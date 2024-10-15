@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/textViewExample"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CPU thread numbers" />
+
+    <EditText
+        android:id="@+id/threadNum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/enter_message"
+        android:text = "@string/default_thread_num"/>
+
+    <TextView
+        android:id="@+id/textViewExample2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="cpu/gpu" />
+    <Spinner
+        android:id="@+id/CPUGPU"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textViewExample3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="max memory size(GB)" />
+
+    <EditText
+        android:id="@+id/memorySize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/enter_message"
+        android:text = "@string/default_max_memory_size"/>
+
+    <Button
+        android:id="@+id/submitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/submit"
+        android:layout_gravity="center_horizontal"/>
+</LinearLayout>

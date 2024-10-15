@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_download"
+        android:title="Download"/>
+    <item
+        android:id="@+id/pause_download"
+        android:title="Pause"/>
+    <item
+        android:id="@+id/cancel_download"
+        android:title="Cancel"/>
+    <item
+        android:id="@+id/resume_download"
+        android:title="Resume"/>
+</menu>

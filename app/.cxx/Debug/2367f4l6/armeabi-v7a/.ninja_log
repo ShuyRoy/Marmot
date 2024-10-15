@@ -1,0 +1,8 @@
+# ninja log v5
+1	10	0	clean	730afb25fd8dd5d3
+640	861	1714021795440074426	/Users/rui/Desktop/CityULLM/app/build/intermediates/cxx/Debug/2367f4l6/obj/armeabi-v7a/libllama.so	db5d5c247c98ac09
+3	640	1714021795237769622	CMakeFiles/llama.dir/llama.cpp.o	9a2f64e60cc553d0
+1	294	1714468642171608580	CMakeFiles/llama.dir/llama.cpp.o	9a2f64e60cc553d0
+294	397	1714468642252147546	/Users/rui/Desktop/CityULLM/app/build/intermediates/cxx/Debug/2367f4l6/obj/armeabi-v7a/libllama.so	db5d5c247c98ac09
+1	899	1714481381620123613	CMakeFiles/llama.dir/llama.cpp.o	9a2f64e60cc553d0
+899	1242	1714481381935405577	/Users/rui/Desktop/CityULLM/app/build/intermediates/cxx/Debug/2367f4l6/obj/armeabi-v7a/libllama.so	db5d5c247c98ac09
