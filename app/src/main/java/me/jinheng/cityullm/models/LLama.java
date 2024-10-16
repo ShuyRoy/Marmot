@@ -122,13 +122,12 @@ public class LLama {
         recyclerView = recyclerView_;
         speedTextView = speedTextView_;
         fab = fab_;
-        historyPath = historyFolder + modelName;
-        historyWriter = new FileWriter(historyPath, true);
-        historyLogger = new HistoryLogger(historyFolder + modelName, CONSTANT.MAX_INIT_HISTORY_ITEM);
-        String localModelPath = Config.basePath + modelName + ".gguf";
+//        historyWriter = new FileWriter(Config.historyPath + modelName, true);
+//        historyLogger = new HistoryLogger(historyFolder + modelName, CONSTANT.MAX_INIT_HISTORY_ITEM);
+        ModelInfo mInfo = ModelOperation.modelName2modelInfo.get(modelName);
+        String localModelPath = mInfo.getModelLocalPath();
         float totalMemory = Utils.getTotalMemory() / CONSTANT.GB;
         float canUseMemory = Math.min(totalMemory, Config.maxMemorySize);
-        ModelInfo mInfo = ModelOperation.getModelInfo(modelName);
         float modelSize = (float) mInfo.getModelSize() / CONSTANT.GB;
 
         float prefetchSizeInGB = 0f;
@@ -143,7 +142,7 @@ public class LLama {
         // cpp中根据prefetchSizeInGB、lSize决定是否调用prefetch版本
         startLLamaWOPrefetch(msg, localModelPath, Config.threadNum, prefetchSizeInGB, lSize);
 
-        initRecord(recyclerView);
+//        initRecord(recyclerView);
 
         curThread = new Thread(new Runnable() {
             @Override
