@@ -1,24 +1,16 @@
 package me.jinheng.cityullm.models;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.res.AssetManager;
 import android.util.Log;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.alibaba.fastjson.JSON;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.util.List;
 
 import me.jinheng.cityullm.Message;
 import me.jinheng.cityullm.MessageAdapter;
@@ -37,10 +29,6 @@ public class LLama {
 
     public static Long id = 0L;
 
-    public static String historyFolder = null /* "/data/local/tmp/llama.cpp/build/" */;
-
-    public static String historyPath;
-
     public static FileWriter historyWriter;
 
     public static boolean answering = false;
@@ -54,6 +42,10 @@ public class LLama {
     public static Thread curThread;
 
     public static HistoryLogger historyLogger;
+
+    static {
+        System.loadLibrary("llama-jni");
+    }
 
     public static void walkFolder(String folderPath) {
         File folder = new File(folderPath);
@@ -113,10 +105,17 @@ public class LLama {
         return false;
     }
 
-    // TODO
-    public static native void startLLama(NativeMessageReceiver msg, String localModelPath, int threadNum);
+    public static native void inputString(String s);
 
-    public static void init(String modelName, MessageAdapter messageAdapter_, Activity activity_, RecyclerView recyclerView_, TextView speedTextView_, ExtendedFloatingActionButton fab_) throws IOException {
+    public static native void startChat(NativeMessageReceiver msg, String localModelPath, String systemPrompt, int threadNum);
+
+    private static native void startChatWPrefetch(NativeMessageReceiver msg, String localModelPath, String systemPrompt, int threadNum, float prefetchSizeInGB, float lSize);
+
+    public static native void stop();
+
+    public static native void kill();
+
+    public static void init(String modelName, boolean enablePrefetch, MessageAdapter messageAdapter_, Activity activity_, RecyclerView recyclerView_, TextView speedTextView_, ExtendedFloatingActionButton fab_) throws IOException {
         messageAdapter = messageAdapter_;
         activity = activity_;
         recyclerView = recyclerView_;
@@ -125,7 +124,6 @@ public class LLama {
 //        historyWriter = new FileWriter(Config.historyPath + modelName, true);
 //        historyLogger = new HistoryLogger(historyFolder + modelName, CONSTANT.MAX_INIT_HISTORY_ITEM);
         ModelInfo mInfo = ModelOperation.modelName2modelInfo.get(modelName);
-        String localModelPath = mInfo.getModelLocalPath();
         float totalMemory = Utils.getTotalMemory() / CONSTANT.GB;
         float canUseMemory = Math.min(totalMemory, Config.maxMemorySize);
         float modelSize = (float) mInfo.getModelSize() / CONSTANT.GB;
@@ -139,8 +137,11 @@ public class LLama {
             kvCacheSizeInGB = (float) mInfo.getKvSize() / CONSTANT.GB;
         }
 
-        // cpp中根据prefetchSizeInGB、lSize决定是否调用prefetch版本
-        startLLamaWOPrefetch(msg, localModelPath, Config.threadNum, prefetchSizeInGB, lSize);
+        if (enablePrefetch) {
+            startChatWPrefetch(msg, mInfo.getModelLocalPath(), mInfo.getSystemPrompt(), Config.threadNum, prefetchSizeInGB, lSize);
+        } else {
+            startChat(msg, mInfo.getModelLocalPath(), mInfo.getSystemPrompt(), Config.threadNum);
+        }
 
 //        initRecord(recyclerView);
 
@@ -164,7 +165,7 @@ public class LLama {
                         if (msg.isStart()) {
                             // START/END
                             answerState = AnswerState.NO_MESSAGE_NEED_REPLY;
-                            historyLogger.append2File(new HistoryItem(id, input, output));
+//                            historyLogger.append2File(new HistoryItem(id, input, output));
                             updateSpeedOnUI(s);
                             updateClear();
                         } else {
@@ -179,8 +180,6 @@ public class LLama {
         curThread.start();
 
     }
-
-    private static native void startLLamaWOPrefetch(NativeMessageReceiver msg, String localModelPath, int threadNum, float prefetchSizeInGB, float lSize);
 
     public static void updateSpeedOnUI(String time) {
         activity.runOnUiThread(new Runnable() {
@@ -209,24 +208,12 @@ public class LLama {
         });
     }
 
-    public static native void startLLamaPrefetch(NativeMessageReceiver msg, String localModelPath, int threadNum, float prefetchSizeInGB, float lSize);
-
-    static {
-        System.loadLibrary("main");
-    }
-
-    public static native void inputString(String s);
-
     public static void run(String input_) throws RuntimeException {
         updateStop();
         input = input_;
         inputString(input);
         answerState = AnswerState.MESSAGE_NEED_REPLY;
     }
-
-    public static native void stop();
-    public static native void kill();
-
 
     public static void initRecord(RecyclerView recyclerView) throws IOException {
         FixedSizeQueue<HistoryItem> queue = historyLogger.readItems();

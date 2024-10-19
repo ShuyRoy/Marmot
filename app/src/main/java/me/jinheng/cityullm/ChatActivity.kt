@@ -93,7 +93,7 @@ class ChatActivity : AppCompatActivity() {
         })
 
         // TODO: receive model name and open the corresponding model.
-        LLama.init(modelName, messageAdapter, this, recyclerView, speedTextView, fab)
+        LLama.init(modelName, false, messageAdapter, this, recyclerView, speedTextView, fab)
         sendButton.setOnClickListener {
             val message = messageEditText.text.toString().trim()
 

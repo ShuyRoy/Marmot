@@ -14,6 +14,8 @@ public class ModelInfo {
 
     private long prefetchSize;
 
+    private String systemPrompt;
+
     public String getModelName() { return modelName; }
 
     public void setModelName(String modelName) { this.modelName = modelName; }
@@ -38,21 +40,19 @@ public class ModelInfo {
 
     public void setPrefetchSize(long prefetchSize) { this.prefetchSize = prefetchSize; }
 
+    public String getSystemPrompt() { return systemPrompt; }
+
+    public void setSystemPrompt(String systemPrompt) { this.systemPrompt = systemPrompt; }
+
     public ModelInfo() { }
 
-    public ModelInfo(String modelName, String modelUrl, String modelLocalPath, long modelSize, long kvSize, long prefetchSize) {
+    public ModelInfo(String modelName, String modelUrl, String modelLocalPath, long modelSize, long kvSize, long prefetchSize, String systemPrompt) {
         this.modelName = modelName;
         this.modelUrl = modelUrl;
         this.modelLocalPath = modelLocalPath;
         this.modelSize = modelSize;
         this.kvSize = kvSize;
         this.prefetchSize = prefetchSize;
-    }
-
-    public ModelInfo(String modelName, String modelUrl, String modelLocalPath, long modelSize) {
-        this.modelName = modelName;
-        this.modelUrl = modelUrl;
-        this.modelLocalPath = modelLocalPath;
-        this.modelSize = modelSize;
+        this.systemPrompt = systemPrompt;
     }
 }
