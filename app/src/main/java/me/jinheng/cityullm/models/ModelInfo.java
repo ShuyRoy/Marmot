@@ -6,15 +6,15 @@ public class ModelInfo {
 
     private String modelUrl;
 
-    private String modelLocalPath;
+    private String modelLocalPath = "";
 
-    private long modelSize;
+    private long modelSize = 0;
 
-    private long kvSize;
+    private long kvSize = 0;
 
-    private long prefetchSize;
+    private long prefetchSize = 0;
 
-    private String systemPrompt;
+    private String systemPrompt = "";
 
     public String getModelName() { return modelName; }
 
