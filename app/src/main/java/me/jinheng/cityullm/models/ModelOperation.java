@@ -99,7 +99,6 @@ public class ModelOperation {
             try {
                 String content = FileUtils.readFileToString(localFile, "utf-8");
                 List<ModelInfo> models = JSON.parseArray(content, ModelInfo.class);
-
                 modelName2modelInfo.clear();
                 for (ModelInfo info : models) {
                     info.setModelLocalPath(Config.modelPath + info.getModelLocalPath());
@@ -111,26 +110,26 @@ public class ModelOperation {
         }
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
-        executorService.execute(() -> {
-            try {
-                // Download metadata of models from server
-                boolean result = downloadFile(modelInfoUrl, modelInfoPath, null);
-                if (result) {
-                    File remoteFile = new File(modelInfoPath);
-                    String content = FileUtils.readFileToString(remoteFile, "utf-8");
-                    List<ModelInfo> models = JSON.parseArray(content, ModelInfo.class);
-
-                    for (ModelInfo info : models) {
-                        info.setModelLocalPath(Config.modelPath + info.getModelLocalPath());
-                        modelName2modelInfo.put(info.getModelName(), info);
-                    }
-                } else {
-                    Log.d("debug", modelInfoUrl + " cannot be downloaded");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+//        executorService.execute(() -> {
+//            try {
+//                // Download metadata of models from server
+//                boolean result = downloadFile(modelInfoUrl, modelInfoPath, null);
+//                if (result) {
+//                    File remoteFile = new File(modelInfoPath);
+//                    String content = FileUtils.readFileToString(remoteFile, "utf-8");
+//                    List<ModelInfo> models = JSON.parseArray(content, ModelInfo.class);
+//
+//                    for (ModelInfo info : models) {
+//                        info.setModelLocalPath(Config.modelPath + info.getModelLocalPath());
+//                        modelName2modelInfo.put(info.getModelName(), info);
+//                    }
+//                } else {
+//                    Log.d("debug", modelInfoUrl + " cannot be downloaded");
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
     public static List<ModelInfo> getAllSupportModels() {

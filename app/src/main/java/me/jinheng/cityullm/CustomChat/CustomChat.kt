@@ -70,8 +70,8 @@ class CustomChat : AppCompatActivity() {
             }
         }
 
-        LLama.init(ModelOperation.getAllSupportModels()[0].modelName,
-            ModelOperation.getAllSupportModels()[0].modelLocalPath,
+        LLama.init(ModelOperation.getAllSupportModels()[1].modelName,
+            ModelOperation.getAllSupportModels()[1].modelLocalPath,
             this@CustomChat)
         textView_model_name!!.text = ModelOperation.getAllSupportModels()[0].modelName
         botEnd()

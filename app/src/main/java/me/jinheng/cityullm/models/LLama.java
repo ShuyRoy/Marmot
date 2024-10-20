@@ -115,6 +115,7 @@ public class LLama {
     }
     public static void init(String modelName, String modelPath, CustomChat chat) throws IOException {
         //String localModelPath = Config.basePath + modelName + ".gguf";
+        Log.e("LLAMA INIT", modelName + " ||| " + modelPath);
         String localModelPath = Config.basePath + modelPath;
         float totalMemory = Utils.getTotalMemory() / CONSTANT.GB;
         float canUseMemory = Math.min(totalMemory, Config.maxMemorySize);

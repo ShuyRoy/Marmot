@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.AssetManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -31,7 +30,6 @@ import me.jinheng.cityullm.ui.home.HomeViewModel
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,10 +43,13 @@ class MainActivity : AppCompatActivity() {
             val inputStream = assetManager.open(initialModelName)
             val outFile = File(modelDir + initialModelName)
             val outputStream = FileOutputStream(outFile)
-            inputStream.copyTo(outputStream)
-            inputStream.close()
-            outputStream.flush()
-            outputStream.close()
+            Thread {
+                inputStream.copyTo(outputStream)
+                inputStream.close()
+                outputStream.flush()
+                outputStream.close()
+                CustomApi.LoadingDialogUtils.dismiss()
+            }.start()
             true
         } catch (e: IOException) {
             e.printStackTrace()
@@ -57,13 +58,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
         LLama.initFolder(getExternalFilesDir(null))
         ModelOperation.updateModels()
+        CustomApi.LoadingDialogUtils.show(this@MainActivity, "Loading Data...")
         try {
-            val initialModelName = "ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf"
+            // val initialModelName = "ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf"
+            val initialModelName = "ggml-model-tinyllama.gguf"
             val modelInfoName = "models.json"
             val assetManager = assets
             val file = assetManager.list("")
+            for (f:String in file!!){
+                println(f)
+            }
             if (file?.contains(initialModelName) == true) {
                 copyFileFromAssets(assetManager, initialModelName, Config.modelPath)
             }
@@ -77,8 +85,6 @@ class MainActivity : AppCompatActivity() {
         if (!LLama.hasInitialModel()) {
             showDownloadDialog()
         }
-        super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

@@ -1,15 +1,21 @@
 package me.jinheng.cityullm.CustomChat
 
+import me.jinheng.cityullm.R
+import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Looper
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.lang.ref.WeakReference
 import java.util.Objects
 
 object CustomApi {
@@ -69,5 +75,61 @@ object CustomApi {
                     or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
         _window.attributes = params
         activity.window.statusBarColor = Color.TRANSPARENT
+    }
+    object LoadingDialogUtils {
+        private var loadingDialog: AlertDialog? = null
+        private var reference: WeakReference<Activity?>? = null
+        private fun init(activity: Activity?, res: Int, text: String?) {
+            if (loadingDialog == null || reference == null || reference!!.get() == null || reference!!.get()!!.isFinishing
+            ) {
+                reference = WeakReference(activity)
+                loadingDialog = AlertDialog.Builder(reference!!.get()).create()
+                if (res > 0) {
+                    val view = LayoutInflater.from(activity).inflate(res, null)
+                    if (null != text) {
+                        val textView = view.findViewById<TextView>(R.id.loading_text)
+                        textView.text = text
+                    }
+                    loadingDialog!!.setView(view)
+                } else {
+                    loadingDialog!!.setMessage("加载中...")
+                }
+                loadingDialog!!.setCancelable(false)
+            }
+        }
+
+        private fun setCancelable(b: Boolean) {
+            if (loadingDialog == null) return
+            loadingDialog!!.setCancelable(b)
+        }
+
+        /**
+         * 显示等待框
+         */
+        fun show(act: Activity?) {
+            show(act, R.layout.custom_dialog_loading, null, false)
+        }
+
+        fun show(act: Activity?, text: String?) {
+            show(act, R.layout.custom_dialog_loading, text, false)
+        }
+
+        fun show(activity: Activity?, res: Int, text: String?, isCancelable: Boolean) {
+            dismiss()
+            init(activity, res, text)
+            setCancelable(isCancelable)
+            loadingDialog!!.show()
+        }
+
+        /**
+         * 隐藏等待框
+         */
+        fun dismiss() {
+            if (loadingDialog != null && loadingDialog!!.isShowing) {
+                loadingDialog!!.dismiss()
+                loadingDialog = null
+                reference = null
+            }
+        }
     }
 }

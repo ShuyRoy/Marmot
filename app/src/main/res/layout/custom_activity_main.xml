@@ -29,7 +29,7 @@
             android:layout_gravity="center"
             android:textSize="18sp"
             android:text="Benchmark"
-            android:background="@color/blue"
+            android:background="@drawable/custom_radius_blue"
             android:textStyle="bold"
             />
         <TextView
