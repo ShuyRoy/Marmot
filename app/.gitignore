@@ -1,1 +1,7 @@
+<<<<<<< HEAD
 /build
+=======
+/build
+/src/main/assets/ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf
+/src/main/assets/models.json
+>>>>>>> ui_dev

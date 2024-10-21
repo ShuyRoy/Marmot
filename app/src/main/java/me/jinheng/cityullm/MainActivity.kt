@@ -1,5 +1,7 @@
 package me.jinheng.cityullm
 
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.AssetManager
 import android.os.Bundle
@@ -18,6 +20,9 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import me.jinheng.cityullm.CustomChat.CMainActivity
+import me.jinheng.cityullm.CustomChat.CustomApi
+import me.jinheng.cityullm.CustomChat.CustomChat
 import me.jinheng.cityullm.databinding.ActivityMainBinding
 import me.jinheng.cityullm.models.Config
 import me.jinheng.cityullm.models.LLama
@@ -100,12 +105,28 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        showJump2CustomChat(this@MainActivity)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         return true
+    }
+
+    fun showJump2CustomChat(ctx: Context){
+        val b =
+        AlertDialog.Builder(this)
+        b.setTitle("是否跳转？")
+            b.setNegativeButton(
+            "取消"
+            ) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
+        b.setPositiveButton(
+            "跳转"
+        ) { _: DialogInterface?, _: Int ->
+            ctx.startActivity(Intent(ctx, CMainActivity::class.java))
+        }
+        b.show()
     }
 
     private fun showDownloadDialog() {

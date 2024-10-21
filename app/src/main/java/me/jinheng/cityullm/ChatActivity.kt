@@ -25,7 +25,6 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val modelName = intent.getStringExtra("MODEL_NAME")
-
         setContentView(R.layout.fragment_chat)
 
         // Initialize the RecyclerView and adapter

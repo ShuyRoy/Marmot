@@ -52,7 +52,6 @@ class GalleryFragment : Fragment() {
 
         _binding = FragmentGalleryBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
         var models: List<ModelInfo> = ModelOperation.getAllSupportModels()
         val numberOfTextViews = models.size
 

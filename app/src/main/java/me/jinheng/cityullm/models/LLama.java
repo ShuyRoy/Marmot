@@ -6,12 +6,19 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alibaba.fastjson.JSON;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.List;
 
+import me.jinheng.cityullm.CustomChat.CustomChat;
 import me.jinheng.cityullm.Message;
 import me.jinheng.cityullm.MessageAdapter;
 
@@ -206,6 +213,12 @@ public class LLama {
                 fab.setText("CLEAR");
             }
         });
+    }
+
+    public static void CustomRun(String input_) throws RuntimeException {
+        input = input_;
+        inputString(input);
+        answerState = AnswerState.MESSAGE_NEED_REPLY;
     }
 
     public static void run(String input_) throws RuntimeException {
