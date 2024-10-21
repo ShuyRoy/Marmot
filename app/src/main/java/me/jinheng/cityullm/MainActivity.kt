@@ -35,52 +35,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-
-    private fun copyFileFromAssets(assetManager: AssetManager,
-                                   initialModelName: String,
-                                   modelDir: String): Boolean {
-        return try {
-            val inputStream = assetManager.open(initialModelName)
-            val outFile = File(modelDir + initialModelName)
-            val outputStream = FileOutputStream(outFile)
-            Thread {
-                inputStream.copyTo(outputStream)
-                inputStream.close()
-                outputStream.flush()
-                outputStream.close()
-                CustomApi.LoadingDialogUtils.dismiss()
-            }.start()
-            true
-        } catch (e: IOException) {
-            e.printStackTrace()
-            false
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         LLama.initFolder(getExternalFilesDir(null))
         ModelOperation.updateModels()
-        CustomApi.LoadingDialogUtils.show(this@MainActivity, "Loading Data...")
-        try {
-            // val initialModelName = "ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf"
-            val initialModelName = "ggml-model-tinyllama.gguf"
-            val modelInfoName = "models.json"
-            val assetManager = assets
-            val file = assetManager.list("")
-            for (f:String in file!!){
-                println(f)
-            }
-            if (file?.contains(initialModelName) == true) {
-                copyFileFromAssets(assetManager, initialModelName, Config.modelPath)
-            }
-            if (file?.contains(modelInfoName) == true) {
-                copyFileFromAssets(assetManager, modelInfoName, Config.modelPath)
-            }
-        } catch (e: IOException) {
-            e.printStackTrace();
-        }
 
         if (!LLama.hasInitialModel()) {
             showDownloadDialog()

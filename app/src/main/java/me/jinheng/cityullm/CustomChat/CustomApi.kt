@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.AssetManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
@@ -15,6 +16,9 @@ import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.Objects
 
@@ -130,6 +134,27 @@ object CustomApi {
                 loadingDialog = null
                 reference = null
             }
+        }
+    }
+
+    private fun copyFileFromAssets(assetManager: AssetManager,
+                                   initialModelName: String,
+                                   modelDir: String): Boolean {
+        return try {
+            val inputStream = assetManager.open(initialModelName)
+            val outFile = File(modelDir + initialModelName)
+            val outputStream = FileOutputStream(outFile)
+            Thread {
+                inputStream.copyTo(outputStream)
+                inputStream.close()
+                outputStream.flush()
+                outputStream.close()
+                LoadingDialogUtils.dismiss()
+            }.start()
+            true
+        } catch (e: IOException) {
+            e.printStackTrace()
+            false
         }
     }
 }

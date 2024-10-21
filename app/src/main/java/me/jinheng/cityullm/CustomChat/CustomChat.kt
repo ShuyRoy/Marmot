@@ -2,7 +2,6 @@ package me.jinheng.cityullm.CustomChat
 
 import android.content.Context
 import android.content.DialogInterface
-import android.content.res.AssetManager
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -15,11 +14,13 @@ import androidx.appcompat.app.AppCompatActivity
 import me.jinheng.cityullm.R
 import me.jinheng.cityullm.models.Config
 import me.jinheng.cityullm.models.LLama
+import me.jinheng.cityullm.models.ModelInfo
 import me.jinheng.cityullm.models.ModelOperation
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.UUID
+import java.io.InputStream
+import java.io.OutputStream
 
 class CustomChat : AppCompatActivity() {
     var selectedItemPosition: Int = -1
@@ -30,17 +31,21 @@ class CustomChat : AppCompatActivity() {
     var result: ListView? = null
     var input: EditText? = null
     var help: ImageView? = null
+    var goback: ImageView? = null
     var start: ImageView? = null
     var config: ImageView? = null
     var del_history: ImageView? = null
     var mBackPressed: Long = 0
     var info: TextView? = null
+    var models: List<ModelInfo>? = null
     var textView_model_name: TextView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.custom_activity_chat)
         CustomApi.setFullscreen(this)
         CustomApi.chatItems = ArrayList()
+        selectedItemPosition = intent.getIntExtra("Selected", 0)
+        loadData()
         history = ArrayList()
         result = findViewById(R.id.result)
         info = findViewById(R.id.chat_info)
@@ -48,7 +53,8 @@ class CustomChat : AppCompatActivity() {
         customChatListAdapter = CustomChatListAdapter(this)
         result!!.adapter = customChatListAdapter
         input = findViewById(R.id.input)
-        help = findViewById(R.id.help)
+        //help = findViewById(R.id.help)
+        goback = findViewById(R.id.goback_page)
         start = findViewById(R.id.start)
         config = findViewById(R.id.config)
         del_history = findViewById(R.id.del_history)
@@ -57,24 +63,70 @@ class CustomChat : AppCompatActivity() {
             refreshListview()
             //LLama.clear()
         }
-        help!!.setOnClickListener {
-            showHelp()
+        //help!!.setOnClickListener {
+            //showHelp()
+        //}
+        goback!!.setOnClickListener {
+            finish()
         }
         config!!.setOnClickListener {
             showConfig()
         }
         start!!.setOnClickListener {
-            var str:String = input!!.text.trim().toString();
+            val str:String = input!!.text.trim().toString();
             if(str.isNotEmpty()){
                 userMsg(str)
             }
         }
-
-        LLama.init(ModelOperation.getAllSupportModels()[1].modelName,
-            ModelOperation.getAllSupportModels()[1].modelLocalPath,
+        LLama.init(ModelOperation.getAllSupportModels()[selectedItemPosition].modelName,
+            ModelOperation.getAllSupportModels()[selectedItemPosition].modelLocalPath,
             this@CustomChat)
-        textView_model_name!!.text = ModelOperation.getAllSupportModels()[0].modelName
+        textView_model_name!!.text = models!![selectedItemPosition].modelName
         botEnd()
+    }
+
+    fun checkFilesInAssets(files: Array<String>?, name: String): Boolean{
+        for (f in files!!){
+            if (f.contains(name)){
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun loadData() {
+        models = ModelOperation.getAllSupportModels()
+        CustomApi.LoadingDialogUtils.show(this@CustomChat, "Loading Data...")
+        try {
+            // val initialModelName = "ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf"
+            val modelInfoName = "models.json"
+            val assetManager = assets
+            val file = assetManager.list("")
+            for (f:String in file!!){
+                println(f)
+            }
+            var model_name = models!![selectedItemPosition].modelName
+            if (checkFilesInAssets(file, models!![selectedItemPosition].modelName)) {
+                if (model_name.contains("tinyllama-1.1b-chat")){
+                    model_name = "ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf"
+                }
+                else if (!model_name.startsWith("ggml")){
+                    model_name = "ggml-model-$model_name.gguf"
+                }
+                copyFileFromAssets(this@CustomChat,
+                    model_name,
+                    Config.modelPath)
+            }else{
+                println("NOT FOUND: $model_name")
+            }
+            if (checkFilesInAssets(file, modelInfoName)) {
+                copyFileFromAssets(this@CustomChat, modelInfoName,
+                    Config.modelPath)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace();
+        }
+
     }
 
     fun closeInputMethod() {
@@ -189,6 +241,40 @@ class CustomChat : AppCompatActivity() {
         }
     }
 
+    @Throws(IOException::class)
+    fun copyFileFromAssets(context: Context, fileName: String?, destinationPath: String) {
+        Thread{
+            var inputStream: InputStream? = null
+            var outputStream: OutputStream? = null
+            try {
+                // 打开 assets 中的文件输入流
+                println("COPYING ${fileName!!}")
+                inputStream = context.assets.open(fileName)
+                // 创建输出文件的输出流
+                val outFile = File("$destinationPath/$fileName")
+                outputStream = FileOutputStream(outFile)
+
+                // 用于存储临时数据的缓冲区
+                val buffer = ByteArray(1024)
+                var read: Int
+                while ((inputStream.read(buffer).also { read = it }) != -1) {
+                    outputStream.write(buffer, 0, read)
+                }
+
+                // 尝试设置执行权限
+                if (!outFile.setExecutable(true, false)) {
+                    throw IOException("Failed to set execute permission for the file.")
+                }
+            } finally {
+                inputStream?.close()
+                if (outputStream != null) {
+                    outputStream.flush()
+                    outputStream.close()
+                }
+                CustomApi.LoadingDialogUtils.dismiss()
+            }
+        }.start()
+    }
     override fun onDestroy() {
         super.onDestroy()
         LLama.destroy()
