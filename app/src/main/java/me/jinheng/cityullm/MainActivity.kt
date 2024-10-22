@@ -26,6 +26,7 @@ import me.jinheng.cityullm.databinding.ActivityMainBinding
 import me.jinheng.cityullm.models.Config
 import me.jinheng.cityullm.models.LLama
 import me.jinheng.cityullm.models.ModelOperation
+import me.jinheng.cityullm.models.Utils.copyFileFromAssets
 import me.jinheng.cityullm.ui.home.HomeViewModel
 import java.io.File
 import java.io.FileOutputStream
@@ -39,8 +40,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         LLama.initFolder(getExternalFilesDir(null))
-        ModelOperation.updateModels()
 
+        val modelInfoName = "models.json"
+        copyFileFromAssets(this, modelInfoName,
+            "${Config.modelPath}/${modelInfoName}")
+        ModelOperation.updateModels()
         if (!LLama.hasInitialModel()) {
             showDownloadDialog()
         }

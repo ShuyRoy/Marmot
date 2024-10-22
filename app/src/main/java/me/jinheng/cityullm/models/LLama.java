@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -272,7 +274,7 @@ public class LLama {
     public static native void inputString(String s);
     public static void CustomRun(String input_) throws RuntimeException {
         input = input_;
-        inputString(input);
+        inputString(input_);
         answerState = AnswerState.MESSAGE_NEED_REPLY;
     }
     public static void run(String input_) throws RuntimeException {

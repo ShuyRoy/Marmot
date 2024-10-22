@@ -23,7 +23,8 @@ import java.io.InputStream
 import java.io.OutputStream
 
 class CustomChat : AppCompatActivity() {
-    var selectedItemPosition: Int = -1
+    var dataloaded = false
+    var selectedNum: Int = -1
     var isBotTalking: Boolean = false
     var history: ArrayList<String>? = null
     var current_bot_chat: ChatItem? = null
@@ -44,8 +45,7 @@ class CustomChat : AppCompatActivity() {
         setContentView(R.layout.custom_activity_chat)
         CustomApi.setFullscreen(this)
         CustomApi.chatItems = ArrayList()
-        selectedItemPosition = intent.getIntExtra("Selected", 0)
-        loadData()
+        selectedNum = intent.getIntExtra("Selected", 0)
         history = ArrayList()
         result = findViewById(R.id.result)
         info = findViewById(R.id.chat_info)
@@ -67,21 +67,21 @@ class CustomChat : AppCompatActivity() {
             //showHelp()
         //}
         goback!!.setOnClickListener {
+            LLama.destroy()
             finish()
         }
         config!!.setOnClickListener {
             showConfig()
         }
         start!!.setOnClickListener {
-            val str:String = input!!.text.trim().toString();
+            val str:String = input!!.text.toString().trim()
             if(str.isNotEmpty()){
+                println("INPUT STR: $str")
                 userMsg(str)
             }
         }
-        LLama.init(ModelOperation.getAllSupportModels()[selectedItemPosition].modelName,
-            ModelOperation.getAllSupportModels()[selectedItemPosition].modelLocalPath,
-            this@CustomChat)
-        textView_model_name!!.text = models!![selectedItemPosition].modelName
+        loadData()
+        textView_model_name!!.text = models!![selectedNum].modelName
         botEnd()
     }
 
@@ -96,32 +96,32 @@ class CustomChat : AppCompatActivity() {
 
     private fun loadData() {
         models = ModelOperation.getAllSupportModels()
-        CustomApi.LoadingDialogUtils.show(this@CustomChat, "Loading Data...")
         try {
             // val initialModelName = "ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf"
-            val modelInfoName = "models.json"
             val assetManager = assets
             val file = assetManager.list("")
-            for (f:String in file!!){
-                println(f)
-            }
-            var model_name = models!![selectedItemPosition].modelName
-            if (checkFilesInAssets(file, models!![selectedItemPosition].modelName)) {
+            var model_name = models!![selectedNum].modelName
+            if (checkFilesInAssets(file, models!![selectedNum].modelName)) {
                 if (model_name.contains("tinyllama-1.1b-chat")){
                     model_name = "ggml-model-tinyllama-1.1b-chat-v1.0-q4_0.gguf"
                 }
                 else if (!model_name.startsWith("ggml")){
                     model_name = "ggml-model-$model_name.gguf"
                 }
-                copyFileFromAssets(this@CustomChat,
-                    model_name,
-                    Config.modelPath)
+
+                CustomApi.LoadingDialogUtils.show(this@CustomChat, "Loading Model...")
+                Thread{
+                    copyFileFromAssets(this@CustomChat,
+                        model_name,
+                        Config.modelPath)
+                    CustomApi.LoadingDialogUtils.dismiss()
+
+                    LLama.init(ModelOperation.getAllSupportModels()[selectedNum].modelName,
+                        ModelOperation.getAllSupportModels()[selectedNum].modelLocalPath,
+                        this@CustomChat)
+                }.start()
             }else{
                 println("NOT FOUND: $model_name")
-            }
-            if (checkFilesInAssets(file, modelInfoName)) {
-                copyFileFromAssets(this@CustomChat, modelInfoName,
-                    Config.modelPath)
             }
         } catch (e: IOException) {
             e.printStackTrace();
@@ -243,37 +243,36 @@ class CustomChat : AppCompatActivity() {
 
     @Throws(IOException::class)
     fun copyFileFromAssets(context: Context, fileName: String?, destinationPath: String) {
-        Thread{
-            var inputStream: InputStream? = null
-            var outputStream: OutputStream? = null
-            try {
-                // 打开 assets 中的文件输入流
-                println("COPYING ${fileName!!}")
-                inputStream = context.assets.open(fileName)
-                // 创建输出文件的输出流
-                val outFile = File("$destinationPath/$fileName")
-                outputStream = FileOutputStream(outFile)
+        var inputStream: InputStream? = null
+        var outputStream: OutputStream? = null
+        try {
+            // 打开 assets 中的文件输入流
+            println("COPYING ${fileName!!}")
+            inputStream = context.assets.open(fileName)
+            // 创建输出文件的输出流
+            val outFile = File("$destinationPath/$fileName")
+            outputStream = FileOutputStream(outFile)
 
-                // 用于存储临时数据的缓冲区
-                val buffer = ByteArray(1024)
-                var read: Int
-                while ((inputStream.read(buffer).also { read = it }) != -1) {
-                    outputStream.write(buffer, 0, read)
-                }
-
-                // 尝试设置执行权限
-                if (!outFile.setExecutable(true, false)) {
-                    throw IOException("Failed to set execute permission for the file.")
-                }
-            } finally {
-                inputStream?.close()
-                if (outputStream != null) {
-                    outputStream.flush()
-                    outputStream.close()
-                }
-                CustomApi.LoadingDialogUtils.dismiss()
+            // 用于存储临时数据的缓冲区
+            val buffer = ByteArray(1024)
+            var read: Int
+            while ((inputStream.read(buffer).also { read = it }) != -1) {
+                outputStream.write(buffer, 0, read)
             }
-        }.start()
+            // 尝试设置执行权限
+            if (!outFile.setExecutable(true, false)) {
+                throw IOException("Failed to set execute permission for the file.")
+            }
+            dataloaded = true
+        } finally {
+            inputStream?.close()
+            if (outputStream != null) {
+                outputStream.flush()
+                outputStream.close()
+            }
+            println("COPIED")
+            CustomApi.LoadingDialogUtils.dismiss()
+        }
     }
     override fun onDestroy() {
         super.onDestroy()
