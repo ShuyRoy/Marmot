@@ -7,6 +7,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.navigation.NavigationView
@@ -18,7 +22,9 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import me.jinheng.cityullm.newui.CustomChat
 import me.jinheng.cityullm.databinding.ActivityMainBinding
+import me.jinheng.cityullm.databinding.CustomActivityMainBinding
 import me.jinheng.cityullm.models.Config
 import me.jinheng.cityullm.models.LLama
 import me.jinheng.cityullm.models.ModelOperation
@@ -31,7 +37,7 @@ import java.io.InputStream
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: CustomActivityMainBinding
 
     private fun copyFileFromAssets(assetManager: AssetManager, initialModelName: String, modelDir: String): Boolean {
         return try {
@@ -66,46 +72,43 @@ class MainActivity : AppCompatActivity() {
         } catch (e: IOException) {
             e.printStackTrace();
         }
-
         if (!LLama.hasInitialModel()) {
             showDownloadDialog()
         }
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = CustomActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        setSupportActionBar(binding.appBarMain.toolbar)
-
-        binding.appBarMain.fab.setOnClickListener { view ->
-            val homeViewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
-            val chatId = System.currentTimeMillis().toString()
-            val chatTitle = "Chat $chatId"
-            val chatRecord = ChatRecord(chatId, chatTitle)
-            homeViewModel.addChatRecord(chatRecord)
-
-            val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("chatId", chatId)
-            startActivity(intent)
+        binding.btmMainCustomChat.setOnClickListener{
+            showModels()
         }
-        val drawerLayout: DrawerLayout = binding.drawerLayout
-        val navView: NavigationView = binding.navView
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
-            ), drawerLayout
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-        navView.setupWithNavController(navController)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main, menu)
-        return true
+    private fun showModels() {
+        val b = AlertDialog.Builder(this)
+        val view = View.inflate(this, R.layout.custom_layout_model_list, null)
+        view.findViewById<TextView>(R.id.model_list_text).text = "Model List"
+        var modelListview = view.findViewById<ListView>(R.id.listview_models)
+        var models = ModelOperation.getAllSupportModels()
+        if (models.isNotEmpty()) {
+            val mainInfo = arrayOfNulls<String>(models.size)
+            for (i in 0 until models.size) {
+                mainInfo[i] = "\t\tModel name: ${models[i].modelName}\n\t\tModel size:${models[i].modelSize}\n\n"
+            }
+            modelListview.adapter =
+                ArrayAdapter(this@MainActivity, R.layout.custom_listview_item, mainInfo)
+            modelListview.onItemClickListener =
+                AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, i: Int, _: Long ->
+                    val it = Intent(
+                        this@MainActivity,
+                        CustomChat::class.java
+                    )
+                    it.putExtra("Selected", i)
+                    this@MainActivity.startActivity(it)
+                }
+        }
+        b.setView(view)
+        b.show()
     }
 
     private fun showDownloadDialog() {
@@ -132,23 +135,6 @@ class MainActivity : AppCompatActivity() {
         }
         progressDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
             progressDialog.dismiss()
-        }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_settings -> {
-                // 在这里添加打开设置页面的代码
-                val intent = Intent(this, SettingsActivity::class.java)
-                startActivity(intent)
-                true // 表示菜单项已经处理完毕
-            }
-            else -> super.onOptionsItemSelected(item) // 其他未处理的菜单项
         }
     }
 }

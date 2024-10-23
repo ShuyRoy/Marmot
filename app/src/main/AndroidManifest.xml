@@ -32,6 +32,12 @@
             android:name=".ChatActivity"
             android:exported="false" />
         <activity android:name=".SettingsActivity" />
+
+        <activity
+            android:name=".newui.CustomChat"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan" />
+
     </application>
 
 </manifest>

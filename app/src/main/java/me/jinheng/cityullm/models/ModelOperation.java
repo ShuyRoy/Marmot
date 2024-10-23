@@ -48,6 +48,12 @@ public class ModelOperation {
         int totalSize = conn.getContentLength();
         int downloadedSize = 0;
 
+        File outFile = new File(filePath);
+        if (outFile.exists() && outFile.length() == totalSize) {
+            Log.d("debug", filePath + " has been downloaded");
+            return true;
+        }
+
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
             conn.disconnect();
             return false;
@@ -223,5 +229,4 @@ public class ModelOperation {
         File f = new File(modelInfo.getModelLocalPath());
         return f.delete();
     }
-
 }
