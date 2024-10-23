@@ -87,15 +87,6 @@ class CustomChat : AppCompatActivity() {
         botEnd()
     }
 
-    private fun checkFilesInAssets(files: Array<String>?, name: String): Boolean{
-        for (f in files!!){
-            if (f.contains(name)){
-                return true
-            }
-        }
-        return false
-    }
-
     private fun loadData() {
         models = ModelOperation.getAllSupportModels()
         try {
@@ -113,7 +104,7 @@ class CustomChat : AppCompatActivity() {
 
     }
 
-    fun closeInputMethod() {
+    private fun closeInputMethod() {
         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         if (imm.isActive) {
             val v = window.peekDecorView()
@@ -123,13 +114,13 @@ class CustomChat : AppCompatActivity() {
         }
     }
 
-    fun refreshListview() {
+    private fun refreshListview() {
         closeInputMethod()
         customChatListAdapter!!.notifyDataSetChanged()
         result!!.adapter = customChatListAdapter
     }
 
-    fun showHelp() {
+    private fun showHelp() {
         val b = AlertDialog.Builder(this)
         val view = View.inflate(this, R.layout.custom_layout_help, null)
         b.setView(view)
@@ -139,13 +130,13 @@ class CustomChat : AppCompatActivity() {
         b.show()
     }
 
-    fun buildPrompt(): String {
+    private fun buildPrompt(): String {
         val prompt = StringBuilder()
-        if (!history!!.isEmpty()) {
-            for (s in history!!) {
-                prompt.append(s)
-            }
-        }
+//        if (!history!!.isEmpty()) {
+//            for (s in history!!) {
+//                prompt.append(s)
+//            }
+//        }
         prompt.append("Q: ").append(input!!.text.toString()).append("\n\nA:")
         return prompt.toString()
     }
@@ -164,11 +155,11 @@ class CustomChat : AppCompatActivity() {
         ) { dialog: DialogInterface?, which: Int -> }.show()
     }
 
-    fun stopPrinting() {
+    private fun stopPrinting() {
         LLama.stop()
     }
 
-    fun updateInfo(msg:String){
+    private fun updateInfo(msg:String){
         runOnUiThread {
             info!!.text = msg;
         }
@@ -184,7 +175,7 @@ class CustomChat : AppCompatActivity() {
         }
     }
 
-    fun userMsg(msg: String){
+    private fun userMsg(msg: String){
         botEnd()
         input!!.setText("")
 //        if (history!!.size >= CustomApi.max_history) {
@@ -197,24 +188,24 @@ class CustomChat : AppCompatActivity() {
         chatItem.text = msg
         CustomApi.chatItems!!.add(chatItem)
         refreshListview()
-//        LLama.CustomRun(msg)
+        LLama.run(msg)
         botBegin()
     }
 
-    fun botBegin(){
+    private fun botBegin(){
         isBotTalking = true;
         CustomApi.chatItems!!.add(currentBotChat!!);
         refreshListview();
     }
 
-    fun botContinue(msg: String){
+    private fun botContinue(msg: String){
         runOnUiThread{
             currentBotChat!!.appendText(msg);
             refreshListview();
         }
     }
 
-    fun botEnd() {
+    private fun botEnd() {
         runOnUiThread {
             isBotTalking = false
             // history!!.add("A: $msg<|endoftext|>\n\n")
@@ -225,39 +216,6 @@ class CustomChat : AppCompatActivity() {
         }
     }
 
-    @Throws(IOException::class)
-    fun copyFileFromAssets(context: Context, fileName: String?, destinationPath: String) {
-        var inputStream: InputStream? = null
-        var outputStream: OutputStream? = null
-        try {
-            // 打开 assets 中的文件输入流
-            println("COPYING ${fileName!!}")
-            inputStream = context.assets.open(fileName)
-            // 创建输出文件的输出流
-            val outFile = File("$destinationPath/$fileName")
-            outputStream = FileOutputStream(outFile)
-
-            // 用于存储临时数据的缓冲区
-            val buffer = ByteArray(1024)
-            var read: Int
-            while ((inputStream.read(buffer).also { read = it }) != -1) {
-                outputStream.write(buffer, 0, read)
-            }
-            // 尝试设置执行权限
-            if (!outFile.setExecutable(true, false)) {
-                throw IOException("Failed to set execute permission for the file.")
-            }
-            dataloaded = true
-        } finally {
-            inputStream?.close()
-            if (outputStream != null) {
-                outputStream.flush()
-                outputStream.close()
-            }
-            println("COPIED")
-            CustomApi.LoadingDialogUtils.dismiss()
-        }
-    }
     override fun onDestroy() {
         super.onDestroy()
         LLama.destroy()
