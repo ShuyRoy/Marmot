@@ -45,7 +45,6 @@ class CustomChat : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.custom_activity_chat)
-        CustomApi.setFullscreen(this)
         CustomApi.chatItems = ArrayList()
         selectedNum = intent.getIntExtra("Selected", 0)
         history = ArrayList()
